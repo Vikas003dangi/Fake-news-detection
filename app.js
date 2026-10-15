@@ -69,6 +69,27 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastAnalysisResult = null;
   let sampleArticlesCache = [];
 
+  // Theme Switching Controller
+  const themeBtns = document.querySelectorAll('.theme-btn');
+  const savedTheme = localStorage.getItem('fake_news_theme') || 'dark';
+
+  function applyTheme(theme) {
+    document.body.classList.remove('dark-theme', 'light-theme', 'pink-theme');
+    document.body.classList.add(`${theme}-theme`);
+    themeBtns.forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.theme === theme);
+    });
+    localStorage.setItem('fake_news_theme', theme);
+  }
+
+  themeBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      applyTheme(btn.dataset.theme);
+    });
+  });
+
+  applyTheme(savedTheme);
+
   // Static fallback samples for GitHub Pages
   const DEFAULT_SAMPLES = [
     {

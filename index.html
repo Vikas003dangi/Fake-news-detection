@@ -32,9 +32,11 @@
       </div>
 
       <div class="header-badges">
-        <span class="status-pill" id="badge-api-status">
-          <span class="pulse-dot"></span> Dual-Engine Active (NLP + GenAI)
-        </span>
+        <div class="theme-switcher-wrapper" id="theme-switcher" title="Switch Theme (Dark, Light, Pink)">
+          <button class="theme-btn active" data-theme="dark" id="theme-dark" title="Obsidian Dark Theme">🌙</button>
+          <button class="theme-btn" data-theme="light" id="theme-light" title="Snow Light Theme">☀️</button>
+          <button class="theme-btn" data-theme="pink" id="theme-pink" title="Sakura Pink Theme">🌸</button>
+        </div>
         <button class="nav-btn" id="btn-api-key-config" title="Configure Google Gemini API Key for Deep AI Reasoning">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 2l-2 2m-6 6l-3-3m0 0l-5 5a2.828 2.828 0 1 0 4 4l5-5m-6-6l2-2"/>
