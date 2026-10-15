@@ -151,17 +151,6 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 pytest -v tests/
 ```
 
----
-
-## 📄 Resume Alignment
-
-```markdown
-Fake News Detection System | Machine Learning, NLP, Generative AI, Python, Scikit-Learn
-Repository: github.com/Vikas003dangi/Fake-news-detection | Live Demo: vikas003dangi.github.io/Fake-news-detection
-• Engineered a dual-engine misinformation detection platform combining calibrated sublinear TF-IDF classifiers with Explainable AI (XAI) token attribution.
-• Built an in-browser inference runtime deployed serverlessly via GitHub Pages (0ms server latency) and integrated Generative AI (LLM) claim decomposition for real-time fact-checking.
-• Evaluated models with 3-Fold Stratified Cross-Validation, achieving 90% test accuracy and 0.9697 CV F1-score across multi-domain journalistic datasets.
-```
 
 ---
 
