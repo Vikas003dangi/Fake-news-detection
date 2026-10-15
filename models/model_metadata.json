@@ -1,0 +1,41 @@
+{
+  "model_architecture": "TF-IDF (1, 2) + Calibrated Logistic Regression",
+  "timestamp": "2026-10-15 09:09:42 UTC",
+  "total_samples": 40,
+  "vocabulary_size": 1717,
+  "benchmark_comparison": {
+    "LogisticRegression": {
+      "accuracy": 0.9,
+      "precision": 0.8333,
+      "recall": 1.0,
+      "f1": 0.9091,
+      "cv_f1_mean": 0.9697,
+      "cv_f1_std": 0.0429
+    },
+    "SGDClassifier": {
+      "accuracy": 0.9,
+      "precision": 0.8333,
+      "recall": 1.0,
+      "f1": 0.9091,
+      "cv_f1_mean": 0.8333,
+      "cv_f1_std": 0.1179
+    }
+  },
+  "selected_model": "LogisticRegression",
+  "full_dataset_metrics": {
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "confusion_matrix": [
+      [
+        20,
+        0
+      ],
+      [
+        0,
+        20
+      ]
+    ]
+  }
+}

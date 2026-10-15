@@ -1,0 +1,44 @@
+[
+  {
+    "id": "real-space",
+    "category": "Science & Space",
+    "expected": "REAL",
+    "title": "NASA Webb Telescope Detects Carbon Molecules on Exoplanet",
+    "text": "NASA's James Webb Space Telescope has detected carbon-bearing molecules, including methane and carbon dioxide, in the atmosphere of exoplanet K2-18 b, according to a peer-reviewed study published in The Astrophysical Journal Letters. Lead investigators stated that the findings provide crucial insights into habitable-zone sub-Neptune worlds."
+  },
+  {
+    "id": "real-economy",
+    "category": "Finance & Economics",
+    "expected": "REAL",
+    "title": "Federal Reserve Holds Benchmark Interest Rates Steady",
+    "text": "The Federal Reserve held the benchmark interest rate steady at 5.25% to 5.50% following a two-day policy meeting. In an official press statement, Federal Reserve officials noted that economic activity has been expanding at a solid pace, though inflation remains somewhat elevated."
+  },
+  {
+    "id": "real-health",
+    "category": "Medical & Clinical",
+    "expected": "REAL",
+    "title": "Oxford Clinical Trials Report 91% Efficacy in Respiratory Vaccine",
+    "text": "Pharmaceutical researchers at the University of Oxford have concluded Phase III clinical trials for an updated dual-strain vaccine. According to data published in The Lancet, the randomized double-blind trial demonstrated 91.4% efficacy in preventing severe respiratory complications among high-risk patients."
+  },
+  {
+    "id": "fake-conspiracy",
+    "category": "Conspiracy & Panic",
+    "expected": "FAKE",
+    "title": "Leaked Docs Claim 5G Microchips Added to Drinking Water",
+    "text": "SHOCKING BOMBSHELL: Whistleblower leaks hidden documents revealing secret 5G microchips are being secretly added to municipal water supplies! Mainstream media is completely silent while millions drink poisoned water! WAKE UP and share before this video is deleted!"
+  },
+  {
+    "id": "fake-medical",
+    "category": "Health Scams",
+    "expected": "FAKE",
+    "title": "Doctors Banned Miracle Cure That Wipes Out Illness in 48 Hours",
+    "text": "THEY ARE LYING TO YOU! Local doctor discovers 100% natural miracle cure that wipes out all cancer tumors in 48 hours, but Big Pharma corrupt billionaires banned it to protect their multi-trillion dollar profits! Doctors hate this man!"
+  },
+  {
+    "id": "fake-finance",
+    "category": "Financial Scams",
+    "expected": "FAKE",
+    "title": "Midnight Executive Order to Seize All Private Bank Accounts",
+    "text": "URGENT WARNING: Secret government agency signs executive order to seize all private gold, bank deposits, and retirement 401ks by midnight tonight! Insider reveals deep state plot to collapse the dollar and force mandatory digital currency slavery!"
+  }
+]
