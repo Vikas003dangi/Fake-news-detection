@@ -4,13 +4,13 @@
 [![Python](https://img.shields.io/badge/Python-3.11%20%7C%203.12%20%7C%203.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.143-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.9-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org)
-[![Gemini AI](https://img.shields.io/badge/Generative%20AI-Deep%20Fact--Check-8E75C2?style=for-the-badge&logo=google)](https://ai.google.dev)
-[![Tests](https://img.shields.io/badge/Tests-13%20Passed-10B981?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
+[![Generative AI](https://img.shields.io/badge/Generative%20AI-Deep%20Fact--Check-8E75C2?style=for-the-badge&logo=google)](https://ai.google.dev)
+[![Tests](https://img.shields.io/badge/Tests-18%20Passed-10B981?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 An advanced, production-grade Natural Language Processing (NLP) and Generative AI system engineered to detect disinformation, clickbait rhetoric, and fabricated news stories. 
 
-Features **sub-10ms in-browser neural NLP inference**, **Explainable AI (XAI)** token attribution, **stylometric forensics**, and **Generative AI claim-level fact-checking** with zero server costs via GitHub Pages.
+Features **sub-10ms in-browser neural NLP inference**, **live news article URL scraping**, **sentence-level credibility heatmaps**, **Explainable AI (XAI)** token attribution, **stylometric forensics**, and **Generative AI claim-level fact-checking** with zero server costs via GitHub Pages.
 
 🌐 **Live Serverless Web Application**: [https://vikas003dangi.github.io/Fake-news-detection/](https://vikas003dangi.github.io/Fake-news-detection/)
 
@@ -20,13 +20,14 @@ Features **sub-10ms in-browser neural NLP inference**, **Explainable AI (XAI)** 
 
 ```mermaid
 flowchart TD
-    A[News Article / Headline / URL] --> B[Text Sanitizer & Normalizer]
+    A[News Article / Headline / Live URL] --> B[Article Scraper & Text Normalizer]
     B --> C[Stylometric Telemetry Engine]
     
     subgraph Engine 1: Neural Fast Forensics
     B --> D[Sublinear TF-IDF N-Grams]
     D --> E[Calibrated Linear Classifier]
     E --> F[Explainable AI XAI Token Attribution]
+    E --> S[Sentence-Level Credibility Flow & Heatmap]
     end
     
     subgraph Engine 2: Generative AI Reasoning
@@ -37,6 +38,7 @@ flowchart TD
     
     C --> J[Composite Credibility Verdict & 0-100% Gauge]
     F --> J
+    S --> J
     I --> J
     J --> K[Interactive Glassmorphic Dashboard & Audit Export]
 ```
@@ -48,16 +50,28 @@ flowchart TD
 1. **100% Serverless GitHub Pages Deployment**:
    The entire trained Scikit-Learn TF-IDF model weights and calibrated decision logic are compiled into an in-browser inference engine (`nlp_engine.js`), allowing anyone to test the live web app with **zero backend servers**, **zero domain needed**, and **zero hosting fees**.
 
-2. **Generative AI Deep Fact-Checking**:
+2. **Live News Article URL Scraper**:
+   Directly paste any web article link (e.g., BBC, Reuters, NYT) to automatically strip DOM clutter, ads, navigation, and extract clean journalistic text for instant credibility forensics.
+
+3. **Sentence-by-Sentence Credibility Heatmap**:
+   Breaks down entire news articles into individual sentences, displaying a color-coded credibility flow (Credible, Questionable, High-Risk) with sensationalist trigger tags and journalistic citations.
+
+4. **Multi-Theme Glassmorphic UI**:
+   Supports three curated color schemes with persistent state:
+   - 🌙 **Obsidian Dark**: Cyberpunk deep slate with ambient radiant glow.
+   - ☀️ **Snow Light**: Clean, minimalist editorial light theme.
+   - 🌸 **Sakura Pink**: Cyber-sakura rose gold palette.
+
+5. **Generative AI Deep Fact-Checking**:
    Integrates LLM-powered investigative claim decomposition that identifies underlying logical fallacies (appeal to fear, false consensus, conspiracy rhetoric) and cross-examines factual accuracy against verified global news consensus.
 
-3. **Explainable AI (XAI) Attribution**:
+6. **Explainable AI (XAI) Attribution**:
    Provides token-level transparency by highlighting deceptive clickbait triggers vs. verified journalistic attribution markers in real time.
 
-4. **Stylometric Forensics**:
+7. **Stylometric Forensics**:
    Computes quantitative metrics including uppercase character ratio (ragebait detection), exclamation density, average word complexity, and sensationalism scores.
 
-5. **Downloadable Credibility Audits**:
+8. **Downloadable Credibility Audits**:
    Generates exportable, timestamped text/audit reports for investigative journalists, researchers, or recruiters.
 
 ---
@@ -108,11 +122,15 @@ Fake-news-detection/
 │   ├── feature_extractor.py          # TF-IDF N-Gram vectorizer builder
 │   ├── model.py                      # Classifier wrapper & probability calibration
 │   ├── explain.py                    # Explainable AI (XAI) token attribution
+│   ├── scraper.py                    # Live news article URL scraper & cleaner
+│   ├── sentence_analyzer.py          # Sentence-level credibility heatmap engine
 │   └── trainer.py                    # Model training, CV evaluation & export
 ├── tests/
 │   ├── test_api.py                   # FastAPI integration tests
 │   ├── test_model.py                 # Model prediction tests
-│   └── test_preprocessor.py          # Text sanitization unit tests
+│   ├── test_preprocessor.py          # Text sanitization unit tests
+│   ├── test_scraper.py               # Live URL article scraper unit tests
+│   └── test_sentence_analyzer.py     # Sentence flow & heatmap unit tests
 ├── Dockerfile                        # Multi-stage production container
 ├── LICENSE                           # MIT License
 └── requirements.txt                  # Pinned dependencies

@@ -10,6 +10,7 @@ import numpy as np
 from src.config import MODEL_FILE, METADATA_FILE
 from src.preprocessor import clean_text, extract_stylometric_features
 from src.explain import explain_prediction
+from src.sentence_analyzer import analyze_sentence_flow
 
 
 class FakeNewsClassifier:
@@ -40,11 +41,11 @@ class FakeNewsClassifier:
         else:
             self.is_loaded = False
 
-    def predict(self, raw_text: str) -> Dict[str, Any]:
+    def predict(self, raw_text: str, include_sentences: bool = True) -> Dict[str, Any]:
         """
         Runs end-to-end inference on the input text.
         Returns predicted verdict, credibility score, stylometric telemetry,
-        and XAI token attribution.
+        XAI token attribution, and sentence credibility heatmap.
         """
         if not raw_text or not raw_text.strip():
             return {
@@ -60,6 +61,7 @@ class FakeNewsClassifier:
                     "annotated_html": "",
                     "explanation_summary": "Empty input text.",
                 },
+                "sentence_analysis": None,
             }
 
         # Extract stylometrics from original raw text
@@ -125,6 +127,9 @@ class FakeNewsClassifier:
             top_k=8
         )
 
+        # Sentence-level credibility flow heatmap
+        sentence_analysis = analyze_sentence_flow(raw_text, self) if include_sentences else None
+
         return {
             "verdict": verdict,
             "is_fake": is_fake,
@@ -133,4 +138,5 @@ class FakeNewsClassifier:
             "confidence_level": confidence,
             "stylometrics": stylometrics,
             "explanation": explanation,
+            "sentence_analysis": sentence_analysis,
         }

@@ -42,9 +42,18 @@ def test_predict_endpoint_success():
     assert "verdict" in data
     assert "stylometrics" in data
     assert "explanation" in data
+    assert "sentence_analysis" in data
+    assert data["sentence_analysis"]["sentence_count"] >= 1
 
 
 def test_predict_endpoint_validation_error():
     payload = {"text": "abc"}
     response = client.post("/api/predict", json=payload)
     assert response.status_code == 422  # Pydantic validation error (min_length=5)
+
+
+def test_scrape_url_endpoint_validation_error():
+    payload = {"url": "short"}
+    response = client.post("/api/scrape-url", json=payload)
+    assert response.status_code == 422
+

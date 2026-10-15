@@ -6,7 +6,7 @@
   'use strict';
 
   const AIAgent = {
-    apiKeyStorageKey: 'veritas_gemini_api_key',
+    apiKeyStorageKey: 'fakenews_gemini_api_key',
 
     getApiKey: function () {
       return localStorage.getItem(this.apiKeyStorageKey) || '';

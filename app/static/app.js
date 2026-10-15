@@ -52,6 +52,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const metricQuotes = document.getElementById('metric-quotes');
   const metricAvgWord = document.getElementById('metric-avg-word');
 
+  // Mode & Scraper Elements
+  const tabModeText = document.getElementById('tab-mode-text');
+  const tabModeUrl = document.getElementById('tab-mode-url');
+  const urlScraperContainer = document.getElementById('url-scraper-container');
+  const newsUrlInput = document.getElementById('news-url-input');
+  const btnFetchUrl = document.getElementById('btn-fetch-url');
+  const btnFetchLabel = document.getElementById('btn-fetch-label');
+  const urlScrapeStatus = document.getElementById('url-scrape-status');
+
+  // Sentence Flow Elements
+  const ratioCredible = document.getElementById('ratio-credible');
+  const ratioQuestionable = document.getElementById('ratio-questionable');
+  const ratioMisinfo = document.getElementById('ratio-misinfo');
+  const flowSegCredible = document.getElementById('flow-seg-credible');
+  const flowSegQuestionable = document.getElementById('flow-seg-questionable');
+  const flowSegMisinfo = document.getElementById('flow-seg-misinfo');
+  const sentenceListContainer = document.getElementById('sentence-list-container');
+
   // Modals
   const btnOpenMetrics = document.getElementById('btn-open-metrics');
   const btnCloseModal = document.getElementById('btn-close-modal');
@@ -159,8 +177,131 @@ document.addEventListener('DOMContentLoaded', () => {
     newsInput.value = '';
     updateCounters();
     resultsSection.classList.add('hidden');
+    if (urlScrapeStatus) urlScrapeStatus.classList.add('hidden');
     newsInput.focus();
   });
+
+  // Switch Input Mode Tabs (Text vs Live URL Scraper)
+  if (tabModeText && tabModeUrl) {
+    tabModeText.addEventListener('click', () => {
+      tabModeText.classList.add('active');
+      tabModeUrl.classList.remove('active');
+      if (urlScraperContainer) urlScraperContainer.classList.add('hidden');
+      newsInput.focus();
+    });
+
+    tabModeUrl.addEventListener('click', () => {
+      tabModeUrl.classList.add('active');
+      tabModeText.classList.remove('active');
+      if (urlScraperContainer) urlScraperContainer.classList.remove('hidden');
+      if (newsUrlInput) newsUrlInput.focus();
+    });
+  }
+
+  // URL Scraper Handler
+  async function handleUrlScrape() {
+    let rawUrl = (newsUrlInput ? newsUrlInput.value : '').trim();
+    if (!rawUrl) {
+      alert('Please enter or paste a valid article URL.');
+      return;
+    }
+    if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+      rawUrl = 'https://' + rawUrl;
+      if (newsUrlInput) newsUrlInput.value = rawUrl;
+    }
+
+    let parsedDomain = 'news source';
+    try {
+      parsedDomain = new URL(rawUrl).hostname;
+    } catch {
+      parsedDomain = rawUrl;
+    }
+
+    if (urlScrapeStatus) {
+      urlScrapeStatus.className = 'url-scrape-status status-loading';
+      urlScrapeStatus.innerHTML = `Extracting article content from <em>${escapeHtml(parsedDomain)}</em>...`;
+      urlScrapeStatus.classList.remove('hidden');
+    }
+    if (btnFetchUrl) btnFetchUrl.disabled = true;
+    if (btnFetchLabel) btnFetchLabel.textContent = 'Extracting...';
+
+    let extractedText = '';
+    let domain = parsedDomain;
+
+    try {
+      // Step 1: Try local backend /api/scrape-url if available
+      try {
+        const res = await fetch('/api/scrape-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: rawUrl })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          extractedText = data.text;
+          domain = data.domain || domain;
+        }
+      } catch (e) {
+        // Backend not running (e.g. running on GitHub Pages)
+      }
+
+      // Step 2: Fallback to Jina Reader CORS-friendly universal extractor for GitHub Pages
+      if (!extractedText) {
+        const jinaUrl = `https://r.jina.ai/${rawUrl}`;
+        const res = await fetch(jinaUrl, {
+          headers: {
+            Accept: 'text/plain'
+          }
+        });
+        if (res.ok) {
+          const rawDoc = await res.text();
+          let cleanDoc = rawDoc.replace(/!\[.*?\]\(.*?\)/g, ''); // strip markdown images
+          cleanDoc = cleanDoc.replace(/\[(.*?)\]\(.*?\)/g, '$1'); // markdown links
+          cleanDoc = cleanDoc.replace(/https?:\/\/\S+/g, ''); // urls
+          cleanDoc = cleanDoc.replace(/^(\s*[-*#=_]\s*){3,}$/gm, ''); // rules
+          extractedText = cleanDoc.trim();
+        } else {
+          throw new Error(`HTTP ${res.status} from web reader.`);
+        }
+      }
+
+      if (!extractedText || extractedText.length < 40) {
+        throw new Error('Could not extract meaningful article text from this URL.');
+      }
+
+      newsInput.value = extractedText;
+      updateCounters();
+
+      if (urlScrapeStatus) {
+        urlScrapeStatus.className = 'url-scrape-status status-success';
+        const wordCount = extractedText.split(/\s+/).filter(Boolean).length;
+        urlScrapeStatus.innerHTML = `✅ Successfully extracted <strong>${wordCount} words</strong> from <em>${escapeHtml(domain)}</em>`;
+      }
+
+      // Automatically execute analysis
+      await executeAnalysis();
+    } catch (err) {
+      if (urlScrapeStatus) {
+        urlScrapeStatus.className = 'url-scrape-status status-error';
+        urlScrapeStatus.innerHTML = `⚠️ Extraction error: ${escapeHtml(err.message || 'Check the URL or paste text directly.')}`;
+      }
+    } finally {
+      if (btnFetchUrl) btnFetchUrl.disabled = false;
+      if (btnFetchLabel) btnFetchLabel.textContent = 'Fetch & Extract';
+    }
+  }
+
+  if (btnFetchUrl) {
+    btnFetchUrl.addEventListener('click', handleUrlScrape);
+  }
+  if (newsUrlInput) {
+    newsUrlInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleUrlScrape();
+      }
+    });
+  }
 
   // Switch Engine Tabs
   tabEngineNlp.addEventListener('click', () => {
@@ -374,6 +515,60 @@ document.addEventListener('DOMContentLoaded', () => {
       metricExclamation.textContent = s.exclamation_count;
       metricQuotes.textContent = s.quote_count;
       metricAvgWord.textContent = s.avg_word_length;
+
+      // Render Sentence-Level Credibility Flow & Heatmap
+      if (nlpData.sentence_analysis && ratioCredible && sentenceListContainer) {
+        const sa = nlpData.sentence_analysis;
+        ratioCredible.textContent = `${sa.credible_ratio}% Credible`;
+        ratioQuestionable.textContent = `${sa.questionable_ratio}% Questionable`;
+        ratioMisinfo.textContent = `${sa.misinformation_ratio}% High-Risk`;
+
+        if (flowSegCredible) flowSegCredible.style.width = `${sa.credible_ratio}%`;
+        if (flowSegQuestionable) flowSegQuestionable.style.width = `${sa.questionable_ratio}%`;
+        if (flowSegMisinfo) flowSegMisinfo.style.width = `${sa.misinformation_ratio}%`;
+
+        sentenceListContainer.innerHTML = '';
+        if (sa.sentences && sa.sentences.length > 0) {
+          sa.sentences.forEach((sent) => {
+            const item = document.createElement('div');
+            let statusClass = 'status-questionable';
+            let pillClass = 'score-questionable';
+            if (sent.status === 'CREDIBLE') {
+              statusClass = 'status-credible';
+              pillClass = 'score-credible';
+            } else if (sent.status === 'MISINFORMATION') {
+              statusClass = 'status-misinfo';
+              pillClass = 'score-misinfo';
+            }
+
+            item.className = `sentence-item ${statusClass}`;
+
+            let tagsHtml = '';
+            if (sent.sensational_triggers && sent.sensational_triggers.length > 0) {
+              sent.sensational_triggers.forEach((t) => {
+                tagsHtml += `<span class="sentence-tag tag-danger">⚠️ ${escapeHtml(t)}</span>`;
+              });
+            }
+            if (sent.journalistic_markers && sent.journalistic_markers.length > 0) {
+              sent.journalistic_markers.forEach((m) => {
+                tagsHtml += `<span class="sentence-tag tag-success">✓ ${escapeHtml(m)}</span>`;
+              });
+            }
+
+            item.innerHTML = `
+              <div class="sentence-item-header">
+                <span class="sentence-num">[#${sent.index}]</span>
+                <span class="sentence-score-pill ${pillClass}">${sent.credibility_score}% ${sent.status}</span>
+              </div>
+              <p class="sentence-text">${escapeHtml(sent.text)}</p>
+              ${tagsHtml ? `<div class="sentence-tags">${tagsHtml}</div>` : ''}
+            `;
+            sentenceListContainer.appendChild(item);
+          });
+        } else {
+          sentenceListContainer.innerHTML = '<p class="placeholder-text">No sentence boundaries identified.</p>';
+        }
+      }
     }
 
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -401,6 +596,19 @@ document.addEventListener('DOMContentLoaded', () => {
       report += `• Uppercase Ratio: ${nlpData.stylometrics.uppercase_ratio}%\n`;
       report += `• Sensationalism Score: ${nlpData.stylometrics.sensationalism_score}%\n`;
       report += `• Journalistic Score: ${nlpData.stylometrics.journalistic_score}%\n\n`;
+
+      if (nlpData.sentence_analysis && nlpData.sentence_analysis.sentences) {
+        const sa = nlpData.sentence_analysis;
+        report += `--- SENTENCE-LEVEL CREDIBILITY FLOW ---\n`;
+        report += `• Total Sentences: ${sa.sentence_count}\n`;
+        report += `• Credible Ratio: ${sa.credible_ratio}%\n`;
+        report += `• Questionable Ratio: ${sa.questionable_ratio}%\n`;
+        report += `• High-Risk Ratio: ${sa.misinformation_ratio}%\n\n`;
+        sa.sentences.forEach((sent) => {
+          report += `  [#${sent.index}] (${sent.status} - ${sent.credibility_score}%) ${sent.text}\n`;
+        });
+        report += `\n`;
+      }
     }
 
     if (genaiData) {

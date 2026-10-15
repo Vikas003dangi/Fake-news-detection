@@ -13,10 +13,11 @@ from pydantic import BaseModel, Field
 
 from src.config import STATIC_DIR, METADATA_FILE, SAMPLE_DATA_FILE
 from src.model import FakeNewsClassifier
+from src.scraper import extract_article_from_url
 
 app = FastAPI(
-    title="Veritas AI - Fake News Detection API",
-    description="Production-grade NLP pipeline for news credibility and misinformation analysis.",
+    title="Fake News Detection System API",
+    description="Production-grade NLP and AI pipeline for news credibility forensics and misinformation analysis.",
     version="2.0.0",
 )
 
@@ -63,6 +64,35 @@ class StylometricsResponse(BaseModel):
     journalistic_matches: List[str]
 
 
+class SentenceItem(BaseModel):
+    index: int
+    text: str
+    credibility_score: float
+    status: str
+    sensational_triggers: List[str] = []
+    journalistic_markers: List[str] = []
+
+
+class SentenceAnalysisResponse(BaseModel):
+    sentence_count: int
+    sentences: List[SentenceItem]
+    credible_ratio: float
+    questionable_ratio: float
+    misinformation_ratio: float
+
+
+class ScrapeUrlRequest(BaseModel):
+    url: str = Field(..., min_length=8, description="URL of the news article to inspect")
+
+
+class ScrapeUrlResponse(BaseModel):
+    title: str
+    text: str
+    word_count: int
+    domain: str
+    url: str
+
+
 class PredictResponse(BaseModel):
     verdict: str
     is_fake: bool
@@ -71,6 +101,7 @@ class PredictResponse(BaseModel):
     confidence_level: str
     stylometrics: StylometricsResponse
     explanation: ExplanationResponse
+    sentence_analysis: Optional[SentenceAnalysisResponse] = None
 
 
 @app.get("/api/health")
@@ -111,7 +142,8 @@ def get_model_metrics() -> Dict[str, Any]:
 def predict_news(request: PredictRequest) -> Dict[str, Any]:
     """
     Analyzes news headline or full text.
-    Returns credibility score, fake vs real verdict, stylometric metrics, and XAI token highlights.
+    Returns credibility score, fake vs real verdict, stylometric metrics, XAI token highlights,
+    and sentence-level credibility heatmap.
     """
     clean_input = request.text.strip()
     if len(clean_input) < 5:
@@ -119,6 +151,19 @@ def predict_news(request: PredictRequest) -> Dict[str, Any]:
 
     result = classifier.predict(clean_input)
     return result
+
+
+@app.post("/api/scrape-url", response_model=ScrapeUrlResponse)
+def scrape_article_endpoint(request: ScrapeUrlRequest) -> Dict[str, Any]:
+    """
+    Scrapes headline, body paragraphs, and domain metadata from a live news article URL.
+    """
+    try:
+        return extract_article_from_url(request.url)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to scrape article from URL: {str(e)}")
 
 
 # Mount static assets for frontend UI

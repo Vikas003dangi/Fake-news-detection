@@ -106,6 +106,120 @@
       };
     },
 
+    _calculateSentenceCredibility: function (sentence) {
+      const sensMarkers = this.bundle ? this.bundle.sensational_markers : [];
+      const journMarkers = this.bundle ? this.bundle.journalistic_markers : [];
+      const lower = sentence.toLowerCase();
+      const sensFound = sensMarkers.filter((m) => lower.includes(m));
+      const journFound = journMarkers.filter((m) => lower.includes(m));
+
+      const cleaned = this.cleanText(sentence);
+      if (!cleaned || !this.isReady) {
+        const fallback = 65.0 - sensFound.length * 25.0 + journFound.length * 20.0;
+        return {
+          score: Math.max(5.0, Math.min(95.0, fallback)),
+          sensFound,
+          journFound
+        };
+      }
+
+      const tokens = cleaned.split(/\s+/).filter(Boolean);
+      const ngrams = [];
+      for (let i = 0; i < tokens.length; i++) {
+        ngrams.push(tokens[i]);
+        if (i < tokens.length - 1) ngrams.push(tokens[i] + ' ' + tokens[i + 1]);
+      }
+
+      const tfMap = new Map();
+      ngrams.forEach((ng) => tfMap.set(ng, (tfMap.get(ng) || 0) + 1));
+
+      const vectorWeights = new Map();
+      let normSq = 0;
+      tfMap.forEach((count, term) => {
+        if (this.featureMap.has(term)) {
+          const idx = this.featureMap.get(term);
+          const idf = this.bundle.idf[idx];
+          const tfVal = 1 + Math.log(count);
+          const weight = tfVal * idf;
+          vectorWeights.set(idx, weight);
+          normSq += weight * weight;
+        }
+      });
+
+      const norm = Math.sqrt(normSq) || 1.0;
+      let logit = this.bundle.intercept;
+      vectorWeights.forEach((weight, idx) => {
+        const normalizedWeight = weight / norm;
+        logit += normalizedWeight * this.bundle.coefficients[idx];
+      });
+
+      let fakeProb = 1.0 / (1.0 + Math.exp(-logit));
+      const stylometrics = this.extractStylometrics(sentence);
+      if (stylometrics.sensationalism_score > 75.0 && fakeProb < 0.7) {
+        fakeProb = Math.min(0.95, fakeProb + 0.15);
+      } else if (stylometrics.journalistic_score > 70.0 && fakeProb > 0.35) {
+        fakeProb = Math.max(0.05, fakeProb - 0.15);
+      }
+
+      const score = Number(((1.0 - fakeProb) * 100).toFixed(1));
+      return { score, sensFound, journFound };
+    },
+
+    analyzeSentenceFlow: function (rawText) {
+      if (!rawText || typeof rawText !== 'string') {
+        return {
+          sentence_count: 0,
+          sentences: [],
+          credible_ratio: 0,
+          questionable_ratio: 0,
+          misinformation_ratio: 0
+        };
+      }
+
+      const rawSentences = rawText.trim().split(/(?<=[.!?])\s+/);
+      const filtered = rawSentences.map((s) => s.trim()).filter((s) => s.length > 8);
+      const sentences = filtered.length > 0 ? filtered : [rawText.trim()];
+
+      let credibleCount = 0;
+      let questionableCount = 0;
+      let misinformationCount = 0;
+
+      const evaluated = sentences.map((sentence, idx) => {
+        const result = this._calculateSentenceCredibility(sentence);
+        const score = result.score;
+
+        let status = 'QUESTIONABLE';
+        if (score >= 60.0) {
+          status = 'CREDIBLE';
+          credibleCount++;
+        } else if (score >= 40.0) {
+          status = 'QUESTIONABLE';
+          questionableCount++;
+        } else {
+          status = 'MISINFORMATION';
+          misinformationCount++;
+        }
+
+        return {
+          index: idx + 1,
+          text: sentence,
+          credibility_score: score,
+          status: status,
+          sensational_triggers: result.sensFound,
+          journalistic_markers: result.journFound
+        };
+      });
+
+      const total = evaluated.length || 1;
+      return {
+        sentence_count: evaluated.length,
+        sentences: evaluated,
+        credible_ratio: Number(((credibleCount / total) * 100).toFixed(1)),
+        questionable_ratio: Number(((questionableCount / total) * 100).toFixed(1)),
+        misinformation_ratio: Number(((misinformationCount / total) * 100).toFixed(1))
+      };
+    },
+
     predict: function (rawText) {
       if (!this.isReady) this.init();
 
@@ -125,7 +239,8 @@
             top_credible_tokens: [],
             annotated_html: rawText,
             explanation_summary: 'Insufficient text or model bundle loading.'
-          }
+          },
+          sentence_analysis: null
         };
       }
 
@@ -259,6 +374,8 @@
         summary = `Prediction derived from calibrated feature weights: ${deceptiveList.length} deceptive signals vs ${credibleList.length} credibility indicators detected.`;
       }
 
+      const sentenceAnalysis = this.analyzeSentenceFlow(rawText);
+
       return {
         verdict: verdict,
         is_fake: isFake,
@@ -271,7 +388,8 @@
           top_credible_tokens: credibleList.slice(0, 8),
           annotated_html: annotatedWords.join(' '),
           explanation_summary: summary
-        }
+        },
+        sentence_analysis: sentenceAnalysis
       };
     }
   };

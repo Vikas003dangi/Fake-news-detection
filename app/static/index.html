@@ -95,6 +95,43 @@
           </div>
         </div>
 
+        <!-- Input Mode Switcher: Direct Text vs Live Article URL -->
+        <div class="input-mode-tabs-wrapper">
+          <div class="input-mode-tabs">
+            <button class="mode-tab active" id="tab-mode-text" data-mode="text">
+              <span class="mode-tab-icon">📝</span>
+              <span class="mode-tab-label">Paste Headline / Article</span>
+            </button>
+            <button class="mode-tab" id="tab-mode-url" data-mode="url">
+              <span class="mode-tab-icon">🔗</span>
+              <span class="mode-tab-label">Live Article URL (Auto-Scrape)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live URL Scraper Bar -->
+        <div class="url-scraper-bar hidden" id="url-scraper-container">
+          <div class="url-input-group">
+            <span class="url-prefix-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
+            </span>
+            <input 
+              type="url" 
+              id="news-url-input" 
+              placeholder="Paste any live news URL (e.g. https://www.bbc.com/news/... or https://www.reuters.com/...)" 
+              spellcheck="false"
+            />
+            <button class="btn-fetch-url" id="btn-fetch-url">
+              <span class="btn-fetch-icon">⚡</span>
+              <span id="btn-fetch-label">Fetch & Extract</span>
+            </button>
+          </div>
+          <div class="url-scrape-status hidden" id="url-scrape-status"></div>
+        </div>
+
         <div class="textarea-container">
           <textarea 
             id="news-input" 
@@ -282,6 +319,33 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Sentence-Level Credibility Heatmap Card -->
+        <div class="glass-card sentence-flow-card" id="sentence-flow-card">
+          <div class="card-header">
+            <div class="header-left">
+              <h3 class="card-title">Sentence-by-Sentence Credibility Heatmap</h3>
+              <p class="card-subtitle">Granular credibility evaluation across each individual sentence and claim.</p>
+            </div>
+            <div class="flow-ratios" id="flow-ratios-container">
+              <span class="ratio-pill pill-credible" id="ratio-credible">0% Credible</span>
+              <span class="ratio-pill pill-questionable" id="ratio-questionable">0% Questionable</span>
+              <span class="ratio-pill pill-misinfo" id="ratio-misinfo">0% High-Risk</span>
+            </div>
+          </div>
+
+          <!-- Cumulative Progress Stacked Bar -->
+          <div class="sentence-flow-bar" id="sentence-flow-bar">
+            <div class="flow-segment segment-credible" id="flow-seg-credible" style="width: 0%" title="Credible statements"></div>
+            <div class="flow-segment segment-questionable" id="flow-seg-questionable" style="width: 0%" title="Questionable statements"></div>
+            <div class="flow-segment segment-misinfo" id="flow-seg-misinfo" style="width: 0%" title="High-risk statements"></div>
+          </div>
+
+          <!-- Sentence Rows -->
+          <div class="sentence-list" id="sentence-list-container">
+            <p class="placeholder-text">Sentence analysis will appear here once credibility inspection completes...</p>
           </div>
         </div>
       </section>
